@@ -3,8 +3,24 @@
   windows_subsystem = "windows"
 )]
 
+use tauri::Manager;
+
 fn main() {
   tauri::Builder::default()
-    .run(tauri::generate_context!())
-    .expect("error while running tauri application");
+    .build(tauri::generate_context!())
+    .expect("error while running tauri application")
+    .run(|app, e| match e {
+      tauri::RunEvent::WindowEvent { label, event, .. } => {
+        println!("{:?}", event);
+        match event {
+          tauri::WindowEvent::CloseRequested { api, ..} =>{
+            api.prevent_close();
+            let win = app.get_window(&label).unwrap();
+            win.hide().unwrap();
+          },
+          _ => {}
+        }
+      }
+      _ => {}
+    })
 }
